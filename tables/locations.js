@@ -3,7 +3,9 @@ import { Risks } from "./risks";
 
 const sequelize = new Sequelize({
     dialect: 'sqlite',
-    storage: './db/analytics.sqlite'
+
+    storage: './db/analitics.sqlite'
+
 
 });
 

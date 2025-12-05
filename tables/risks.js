@@ -6,7 +6,9 @@ import { POSSIBLE_RISKS } from "../vld/risk-validation.js";
 
 const sequelize = new Sequelize({
     dialect: 'sqlite',
-    storage: './db/analytics.sqlite'
+
+    storage: './db/analitics.sqlite'
+
 
 });
 
