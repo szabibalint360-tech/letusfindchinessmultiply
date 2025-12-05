@@ -1,13 +1,8 @@
 import express from "express";
 import { Locations } from "./tables/locations.js";
+import { Risks } from "./tables/risks.js";
 
-// --- Controller Functions ---
 
-/**
- * Handles POST request to create a new location.
- * @param {express.Request} req 
- * @param {express.Response} res 
- */
 const createLocation = async (req, res) => {
     try {
         // req.body should contain { judeti, locatie, numLoc }
@@ -19,11 +14,6 @@ const createLocation = async (req, res) => {
     }
 };
 
-/**
- * Handles GET request to retrieve all locations.
- * @param {express.Request} req 
- * @param {express.Response} res 
- */
 const getAllLocations = async (req, res) => {
     try {
         const list = await Locations.findAll();
@@ -34,11 +24,6 @@ const getAllLocations = async (req, res) => {
     }
 };
 
-/**
- * Handles GET request to retrieve locations by county (judet).
- * @param {express.Request} req 
- * @param {express.Response} res 
- */
 const getLocationsByJudet = async (req, res) => {
     try {
         const list = await Locations.findAll({
@@ -51,11 +36,6 @@ const getLocationsByJudet = async (req, res) => {
     }
 };
 
-/**
- * Handles DELETE request to delete a location by ID.
- * @param {express.Request} req 
- * @param {express.Response} res 
- */
 const deleteLocation = async (req, res) => {
     try {
         const deletedRows = await Locations.destroy({ 
@@ -73,27 +53,106 @@ const deleteLocation = async (req, res) => {
     }
 };
 
-//should go to main yes i wrote this 
-const app = express();
-app.use(express.json());
-
-// CREATE
-app.post("/locations", createLocation);
-
-// READ all
-app.get("/locations", getAllLocations);
-
-// READ by county
-app.get("/locations/judet/:judeti", getLocationsByJudet);
-
-// DELETE
-app.delete("/locations/:id", deleteLocation);
-
-app.listen(3000, () => console.log("Server running on http://localhost:3000"));
 
 export { 
     createLocation, 
     getAllLocations, 
     getLocationsByJudet, 
     deleteLocation 
+};
+
+
+
+const createRisk = async (req, res) => {
+    try {
+        // req.body should contain { info, satRel, arrayStringNumeFisiere }
+        const newRisk = await Risks.create(req.body);
+        res.json(newRisk);
+    } catch (error) {
+        console.error("Error creating risk:", error);
+        res.status(500).json({ error: "Failed to create risk" });
+    }
+};
+
+
+const getAllRisks = async (req, res) => {
+    try {
+        const list = await Risks.findAll();
+        res.json(list);
+    } catch (error) {
+        console.error("Error fetching all risks:", error);
+        res.status(500).json({ error: "Failed to retrieve risks" });
+    }
+};
+
+const getRiskById = async (req, res) => {
+    try {
+        const risk = await Risks.findByPk(req.params.id);
+        
+        if (risk) {
+            res.json(risk);
+        } else {
+            res.status(404).json({ message: `Risk with ID ${req.params.id} not found.` });
+        }
+    } catch (error) {
+        console.error("Error fetching risk by ID:", error);
+        res.status(500).json({ error: "Failed to retrieve risk by ID" });
+    }
+};
+
+const getRisksBySatRel = async (req, res) => {
+    try {
+        const list = await Risks.findAll({
+            where: { satRel: req.params.satRel }
+        });
+        res.json(list);
+    } catch (error) {
+        console.error("Error fetching risks by satRel:", error);
+        res.status(500).json({ error: "Failed to retrieve risks by satRel" });
+    }
+};
+
+const updateRisk = async (req, res) => {
+    try {
+        const [updatedRows] = await Risks.update(req.body, {
+            where: { id: req.params.id }
+        });
+
+        if (updatedRows > 0) {
+            // Fetch and return the updated record
+            const updatedRisk = await Risks.findByPk(req.params.id);
+            res.json(updatedRisk);
+        } else {
+            res.status(404).json({ updated: false, message: `Risk with ID ${req.params.id} not found or no changes made.` });
+        }
+    } catch (error) {
+        console.error("Error updating risk:", error);
+        res.status(500).json({ error: "Failed to update risk" });
+    }
+};
+
+const deleteRisk = async (req, res) => {
+    try {
+        const deletedRows = await Risks.destroy({ 
+            where: { id: req.params.id }
+        });
+        
+        if (deletedRows > 0) {
+            res.json({ deleted: true, message: `Risk with ID ${req.params.id} deleted successfully.` });
+        } else {
+            res.status(404).json({ deleted: false, message: `Risk with ID ${req.params.id} not found.` });
+        }
+    } catch (error) {
+        console.error("Error deleting risk:", error);
+        res.status(500).json({ error: "Failed to delete risk" });
+    }
+};
+
+export { 
+    createRisk,
+    getAllRisks,
+    getRiskById,
+    getRisksBySatRel,
+    updateRisk,
+    deleteRisk
 };
