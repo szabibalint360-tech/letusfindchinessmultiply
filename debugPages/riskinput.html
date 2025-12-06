@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Risk Manager Frontend</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+        .btn { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        /* Optional: Basic styling for better visibility */
+        form, #controls { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; }
+        label { display: inline-block; width: 150px; }
+    </style>
+</head>
+<body>
+    <a href="/dev1">
+        <button class="btn">Go to locationinput</button>
+    </a>
+    <br>
+    <h1>Risk Management</h1>
+    
+    <hr>
+    
+    <h2> Create/Update Risk</h2>
+    <form id="riskForm">
+        <label for="riskId">Risk ID (for Update/Delete):</label>
+        <input type="number" id="riskId" name="id" placeholder="Leave empty for Create"><br><br>
+        
+        <label for="info">Risk Description (info):</label>
+        <textarea id="info" name="info" required style="width: 300px; height: 50px;"></textarea><br><br>
+
+        <label for="satRel">Saturation/Relevance (satRel):</label>
+        <input type="number" id="satRel" name="satRel" required min="1" max="10" placeholder="1-10"><br><br>
+
+        <label for="files">File Names (arrayStringNumeFisiere):</label>
+        <input type="text" id="files" name="arrayStringNumeFisiere" 
+               placeholder='e.g., ["map.pdf", "report.txt"]' required><br><br>
+        
+        <button type="submit" id="createButton">Create New Risk</button>
+        <button type="button" id="updateButton">Update Risk by ID</button>
+        <button type="button" id="deleteButton">Delete Risk by ID</button>
+    </form>
+
+    <hr>
+
+    <h2>🔎 View Risks</h2>
+    <div id="controls">
+        <button id="fetchAllButton">Fetch All Risks</button>
+        <br><br>
+        
+        <label for="satRelInput">Search by Saturation (satRel):</label>
+        <input type="number" id="satRelInput" placeholder="e.g., 5">
+        <button id="fetchBySatRelButton">Search</button>
+    </div>
+
+    <pre id="resultsArea"></pre>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/dev2';
+        const resultsArea = document.getElementById('resultsArea');
+        const form = document.getElementById('riskForm');
+
+
+        // Helper function to show results
+        function displayResults(data) {
+            resultsArea.textContent = JSON.stringify(data, null, 2);
+        }
+
+        // --- CRUD Functions ---
+
+        // 1. CREATE Risk (POST /risks)
+        async function createRisk(event) {
+            event.preventDefault();
+
+            // Collect data from the form fields
+            const newRiskData = {
+                info: form.info.value,
+                satRel: parseInt(form.satRel.value),
+                // IMPORTANT: The frontend must send this as a valid JSON string or array
+                arrayStringNumeFisiere: JSON.parse(form.files.value) 
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/risks`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newRiskData)
+                });
+
+                const result = await response.json();
+                displayResults(result);
+
+                if (response.ok) {
+                    alert(`Risk successfully created! ID: ${result.id}`);
+                    form.reset(); 
+                    fetchAllRisks(); 
+                } else {
+                    alert(`Error creating risk: ${result.error || result.details}`);
+                }
+            } catch (error) {
+                console.error('Network Error:', error);
+                alert('Failed to connect or JSON format is invalid in the files field.');
+            }
+        }
+        
+        // 2. READ All Risks (GET /risks)
+        async function fetchAllRisks() {
+            resultsArea.textContent = 'Loading all risks...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/risks`);
+                const list = await response.json();
+                displayResults(list);
+            } catch (error) {
+                console.error('Network Error:', error);
+                resultsArea.textContent = 'Failed to fetch data from the server.';
+            }
+        }
+
+        // 3. READ Risks by SatRel (GET /risks/satrel/:satRel)
+        async function fetchRisksBySatRel() {
+            const satRel = document.getElementById('satRelInput').value.trim();
+            
+            if (!satRel) {
+                alert('Please enter a Saturation value to search (1-10).');
+                return;
+            }
+
+            resultsArea.textContent = `Searching for risks with satRel=${satRel}...`;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/risks/satrel/${satRel}`);
+                const list = await response.json();
+                displayResults(list);
+            } catch (error) {
+                console.error('Network Error:', error);
+                resultsArea.textContent = 'Failed to fetch data from the server.';
+            }
+        }
+
+        // 4. UPDATE Risk (PUT /risks/:id)
+        async function updateRisk() {
+            const riskId = form.riskId.value;
+            if (!riskId) { alert("Please enter a Risk ID to update."); return; }
+
+            const updateData = {
+                info: form.info.value,
+                satRel: parseInt(form.satRel.value),
+                arrayStringNumeFisiere: JSON.parse(form.files.value) 
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/risks/${riskId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                });
+
+                const result = await response.json();
+                displayResults(result);
+
+                if (response.ok) {
+                    alert(`Risk ID ${riskId} successfully updated.`);
+                    fetchAllRisks();
+                } else {
+                    alert(`Error updating risk: ${result.message || JSON.stringify(result)}`);
+                }
+            } catch (error) {
+                console.error('Network Error:', error);
+                alert('Failed to connect or JSON format is invalid.');
+            }
+        }
+        
+        // 5. DELETE Risk (DELETE /risks/:id)
+        async function deleteRisk() {
+            const riskId = form.riskId.value;
+            if (!riskId) { alert("Please enter a Risk ID to delete."); return; }
+
+            if (!confirm(`Are you sure you want to delete Risk ID ${riskId}?`)) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/risks/${riskId}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+                displayResults(result);
+
+                if (response.ok) {
+                    alert(`Risk ID ${riskId} successfully deleted.`);
+                    form.reset();
+                    fetchAllRisks();
+                } else {
+                    alert(`Error deleting risk: ${result.message || JSON.stringify(result)}`);
+                }
+            } catch (error) {
+                console.error('Network Error:', error);
+                alert('Failed to connect to the server.');
+            }
+        }
+
+
+        // --- Event Listeners ---
+
+        document.getElementById('createButton').addEventListener('click', createRisk);
+        document.getElementById('updateButton').addEventListener('click', updateRisk);
+        document.getElementById('deleteButton').addEventListener('click', deleteRisk);
+        
+        // Prevent form submission on enter key press for update/delete buttons
+        form.addEventListener('submit', createRisk); 
+
+        document.getElementById('fetchAllButton').addEventListener('click', fetchAllRisks);
+        document.getElementById('fetchBySatRelButton').addEventListener('click', fetchRisksBySatRel);
+
+        document.addEventListener('DOMContentLoaded', fetchAllRisks);
+    </script>
+</body>
+</html>

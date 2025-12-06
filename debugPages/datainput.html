@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+        .btn { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    </style>
+    <meta charset="UTF-8">
+    <title>Location Manager Frontend</title>
+</head>
+<body>
+    <a href="/dev2">
+        <button class="btn">Go to riskinput</button>
+    </a>
+    <br>
+    <h2>Create New Location</h2>
+    <form id="createLocationForm">
+        <label for="judeti">County (judeti):</label>
+        <input type="text" id="judeti" name="judeti" required><br><br>
+
+        <label for="locatie">Location (locatie):</label>
+        <input type="text" id="locatie" name="locatie" required><br><br>
+
+        <label for="numLoc">Population (numLoc):</label>
+        <input type="number" id="numLoc" name="numLoc" required><br><br>
+
+        <button type="submit">Submit New Location</button>
+    </form>
+
+    <hr>
+
+    <h2>View Locations</h2>
+    <button id="fetchAllButton">Fetch All Locations</button>
+    <br><br>
+    
+    <label for="judetInput">Search by County (judet):</label>
+    <input type="text" id="judetInput" placeholder="e.g., CLUJ">
+    <button id="fetchByJudetButton">Search</button>
+
+    <pre id="resultsArea"></pre>
+
+    <script>
+        
+// Configuration
+
+const API_BASE_URL = 'http://localhost:8080';
+const resultsArea = document.getElementById('resultsArea');
+
+
+// 1. CREATE Location (POST /locations)
+
+async function createLocation(event) {
+    event.preventDefault(); // Stop the default form submission (page reload)
+
+    const form = event.target;
+    
+    // Collect data from the form fields
+    const newLocationData = {
+        judeti: form.judeti.value.toUpperCase(), // Best practice: ensure judeti is capitalized to match DB entries
+        locatie: form.locatie.value,
+        numLoc: parseInt(form.numLoc.value) 
+    };
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/locations`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify(newLocationData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert(`Location successfully created! ID: ${result.id}, Location: ${result.locatie}`);
+            form.reset(); 
+            // Optional: Immediately refresh the list after creation
+            fetchAllLocations(); 
+        } else {
+            // Display error details from the backend (if available)
+            alert(`Error creating location: ${result.error || result.details || JSON.stringify(result)}`);
+            resultsArea.textContent = JSON.stringify(result, null, 2);
+        }
+    } catch (error) {
+        console.error('Network Error:', error);
+        alert('Failed to connect to the server. Check if your Node.js app is running on port 8080.');
+    }
+}
+
+
+// 2. READ All Locations (GET /locations)
+
+async function fetchAllLocations() {
+    resultsArea.textContent = 'Loading all locations...';
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/locations`);
+        const list = await response.json();
+
+        if (response.ok) {
+            resultsArea.textContent = JSON.stringify(list, null, 2); 
+        } else {
+            resultsArea.textContent = `Error fetching all locations: ${list.error || JSON.stringify(list)}`;
+        }
+    } catch (error) {
+        console.error('Network Error:', error);
+        resultsArea.textContent = 'Failed to fetch data from the server.';
+    }
+}
+
+
+
+// 3. READ Locations by County (GET /locations/judet/:judeti)
+
+async function fetchLocationsByJudet() {
+    const judet = document.getElementById('judetInput').value.trim().toUpperCase();
+    
+    if (!judet) {
+        alert('Please enter a county name to search.');
+        return;
+    }
+
+    resultsArea.textContent = `Searching for locations in ${judet}...`;
+
+    try {
+        // Build the URL with the dynamic parameter
+        const response = await fetch(`${API_BASE_URL}/locations/judet/${judet}`);
+        const list = await response.json();
+
+        if (response.ok) {
+            resultsArea.textContent = JSON.stringify(list, null, 2);
+        } else {
+            resultsArea.textContent = `Error searching by county: ${list.error || JSON.stringify(list)}`;
+        }
+    } catch (error) {
+        console.error('Network Error:', error);
+        resultsArea.textContent = 'Failed to fetch data from the server.';
+    }
+}
+
+
+
+document.getElementById('createLocationForm').addEventListener('submit', createLocation);
+
+document.getElementById('fetchAllButton').addEventListener('click', fetchAllLocations);
+
+document.getElementById('fetchByJudetButton').addEventListener('click', fetchLocationsByJudet);
+
+document.addEventListener('DOMContentLoaded', fetchAllLocations);
+    </script>
+</body>
+</html>
