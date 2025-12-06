@@ -14,7 +14,9 @@ import {
     getRisksBySatRel,
     updateRisk,
     deleteRisk,
-    riskBULK
+    riskBULK,
+    riskValidationTest,
+    judetGetList
 } from './methods.api.js';
 
 // Get __dirname equivalent in ES modules
@@ -40,6 +42,9 @@ app.get("/risks/satrel/:satRel", getRisksBySatRel);
 app.put("/risks/:id", updateRisk);
 app.delete("/risks/:id", deleteRisk);
 app.get('/risks/bulkcreate', riskBULK);
+
+app.get('/risks-val', riskValidationTest);
+app.get('/judet-list', judetGetList);
 
 // LOCATIONS
 app.post("/locations", createLocation);

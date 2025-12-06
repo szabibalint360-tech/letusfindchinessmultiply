@@ -1,5 +1,7 @@
 import express from "express";
 import { Locations, sequelize, Risks } from "./tables/index.js";
+import { POSSIBLE_RISKS } from "./vld/risk-validation.js";
+import { JUDETE } from "./vld/judet-validation.js";
 
 const createLocation = async (req, res) => {
     try {
@@ -26,6 +28,10 @@ const createLocation = async (req, res) => {
         return res.status(500).json({ status: false, content: error.message });
     }
 };
+
+export const judetGetList = async (req, res) => {
+    res.status(200).json({ status: true, content: JUDETE });
+}
 
 const getAllLocations = async (req, res) => {
     try {
@@ -69,6 +75,7 @@ const createRisk = async (req, res) => {
         const newRisk = await Risks.create({
             info: req.body.info,
             satRel: req.body.satRel,
+            type_risk: req.body.type_risk,
             arrayStringNumeFisiere: req.body.arrayStringNumeFisiere // Ensure frontend sends this as a JSON string or array
         });
         return res.status(201).json({ status: true, content: newRisk, contentString: JSON.stringify(newRisk) });
@@ -80,6 +87,12 @@ const createRisk = async (req, res) => {
         return res.status(500).json({ status: false, content: error.message });
     }
 };
+
+export const riskValidationTest = async (req, res) => {
+   res.status(200).json({ status: true, content: POSSIBLE_RISKS });
+}
+
+
 
 // DEBUG METHOD FOR BULK INSERT
 const riskBULK = async (req, res) => {
