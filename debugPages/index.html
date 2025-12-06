@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Debug Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            padding: 20px;
+            text-decoration: none;
+            color: white;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        .card h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card p {
+            font-size: 0.95em;
+            opacity: 0.95;
+            line-height: 1.5;
+        }
+        .icon {
+            font-size: 1.3em;
+        }
+        .info-box {
+            background: #f5f5f5;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        .info-box strong {
+            color: #333;
+        }
+        .status {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 4px;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛠️ API Debug Dashboard</h1>
+        <p class="subtitle">Test all endpoints for Locations & Risks</p>
+
+        <div class="grid">
+            <a href="/locations-debug" class="card">
+                <h2><span class="icon">📍</span> Locations</h2>
+                <p>Create, read, and delete location records. Bulk create support.</p>
+            </a>
+
+            <a href="/risks-debug" class="card">
+                <h2><span class="icon">⚠️</span> Risks</h2>
+                <p>Manage disaster risks with full CRUD operations and filtering.</p>
+            </a>
+        </div>
+
+        <div class="info-box">
+            <strong>📡 API Server:</strong> http://localhost:8080<br>
+            <strong>✅ Status:</strong> Check browser console for network errors<br>
+            <strong>📖 Features:</strong> All responses follow <code>{status, content, contentString}</code> format
+        </div>
+
+        <div class="status">
+            ✨ Server running on port 8080. Ready to debug!
+        </div>
+    </div>
+</body>
+</html>

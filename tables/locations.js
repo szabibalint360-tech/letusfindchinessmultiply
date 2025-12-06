@@ -1,13 +1,7 @@
-import { DataTypes, Sequelize } from "sequelize";
-import { Risks } from "./risks";
-
-const sequelize = new Sequelize({
-    dialect: 'sqlite',
-
-    storage: './db/analitics.sqlite'
+import { DataTypes } from "sequelize";
+import { sequelize } from "../db-instance.js";
 
 
-});
 
 export var Locations = sequelize.define('Locations', {
     id: {
@@ -28,9 +22,3 @@ export var Locations = sequelize.define('Locations', {
     tableName: 'locations',
     timestamps: false 
 });
-
-Locations.hasMany(Risks, { foreignKey: 'satRel' });
-
-sequelize.sync()
-    .then( () => {console.log("DB connection working!");})
-    .catch(error => console.log("DB connection failed", error));

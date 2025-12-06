@@ -1,59 +1,64 @@
 import express from "express";
-import { Locations } from "./tables/locations.js";
-import { Risks } from "./tables/risks.js";
-
+import { Locations, sequelize, Risks } from "./tables/index.js";
 
 const createLocation = async (req, res) => {
     try {
-        const loc = await Locations.create({
-            judeti: req.body.judeti,
-            locatie: req.body.locatie,
-            numLoc: req.body.numLoc
+        let arrLOC = [];
+        for (let obj of req.body) {
+            const loc = await Locations.create({
+                judeti: obj.judeti,
+                locatie: obj.locatie,
+                numLoc: obj.numLoc
+            });
+            arrLOC.push(loc);
+        }
+
+        return res.status(201).json({
+            status: true,
+            content: arrLOC,
+            contentString: JSON.stringify(arrLOC)
         });
-        res.status(201).json(loc); // Use 201 Created status for POST
     } catch (error) {
         console.error("Error creating location:", error);
-        // Sequelize validation errors often benefit from 400 Bad Request
-        res.status(500).json({ error: "Failed to create location", details: error.message });
+        if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(400).json({ status: false, content: error.errors });
+        }
+        return res.status(500).json({ status: false, content: error.message });
     }
 };
 
 const getAllLocations = async (req, res) => {
     try {
         const list = await Locations.findAll();
-        res.json(list);
+        return res.status(200).json({ status: true, content: list, contentString: JSON.stringify(list) });
     } catch (error) {
         console.error("Error fetching all locations:", error);
-        res.status(500).json({ error: "Failed to retrieve locations" });
+        return res.status(500).json({ status: false, content: error.message });
     }
 };
 
 const getLocationsByJudet = async (req, res) => {
     try {
-        const list = await Locations.findAll({
-            where: { judeti: req.params.judeti }
-        });
-        res.json(list);
+        const list = await Locations.findAll({ where: { judeti: req.params.judeti } });
+        return res.status(200).json({ status: true, content: list, contentString: JSON.stringify(list) });
     } catch (error) {
         console.error("Error fetching locations by judet:", error);
-        res.status(500).json({ error: "Failed to retrieve locations by judet" });
+        return res.status(500).json({ status: false, content: error.message });
     }
 };
 
 const deleteLocation = async (req, res) => {
     try {
-        const deletedRows = await Locations.destroy({ 
-            where: { id: req.params.id }
-        });
-        
+        const deletedRows = await Locations.destroy({ where: { id: req.params.id } });
+
         if (deletedRows > 0) {
-            res.json({ deleted: true, message: `Location with ID ${req.params.id} deleted successfully.` });
+            return res.status(200).json({ status: true, content: { deleted: true, id: req.params.id } });
         } else {
-            res.status(404).json({ deleted: false, message: `Location with ID ${req.params.id} not found.` });
+            return res.status(404).json({ status: false, content: `Location with ID ${req.params.id} not found.` });
         }
     } catch (error) {
         console.error("Error deleting location:", error);
-        res.status(500).json({ error: "Failed to delete location" });
+        return res.status(500).json({ status: false, content: error.message });
     }
 };
 
@@ -66,90 +71,104 @@ const createRisk = async (req, res) => {
             satRel: req.body.satRel,
             arrayStringNumeFisiere: req.body.arrayStringNumeFisiere // Ensure frontend sends this as a JSON string or array
         });
-        res.status(201).json(newRisk); // Use 201 Created status
+        return res.status(201).json({ status: true, content: newRisk, contentString: JSON.stringify(newRisk) });
     } catch (error) {
         console.error("Error creating risk:", error);
-        res.status(500).json({ error: "Failed to create risk", details: error.message });
+        if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(400).json({ status: false, content: error.errors });
+        }
+        return res.status(500).json({ status: false, content: error.message });
     }
 };
 
+// DEBUG METHOD FOR BULK INSERT
+const riskBULK = async (req, res) => {
+    try {
+        await Risks.bulkCreate(req.params.jsonArray);
+        return res.status(200).json({ status: true, content: 'Table populated successfully.' });
+    } catch (error) {
+        console.error("Error during Risks bulkCreate:", error);
+        return res.status(500).json({ status: false, content: error.message });
+    }
+};
+
+// LIST ALL RISKS
 const getAllRisks = async (req, res) => {
     try {
         const list = await Risks.findAll();
-        res.json(list);
+        return res.status(200).json({ status: true, content: list, contentString: JSON.stringify(list) });
     } catch (error) {
         console.error("Error fetching all risks:", error);
-        res.status(500).json({ error: "Failed to retrieve risks" });
+        return res.status(500).json({ status: false, content: error.message });
     }
 };
 
+// GET RISK BY ID
 const getRiskById = async (req, res) => {
     try {
         const risk = await Risks.findByPk(req.params.id);
-        
+
         if (risk) {
-            res.json(risk);
+            return res.status(200).json({ status: true, content: risk, contentString: JSON.stringify(risk) });
         } else {
-            res.status(404).json({ message: `Risk with ID ${req.params.id} not found.` });
+            return res.status(404).json({ status: false, content: `Risk with ID ${req.params.id} not found.` });
         }
     } catch (error) {
         console.error("Error fetching risk by ID:", error);
-        res.status(500).json({ error: "Failed to retrieve risk by ID" });
+        return res.status(500).json({ status: false, content: error.message });
     }
 };
 
+// FILTER BY SATREL
 const getRisksBySatRel = async (req, res) => {
     try {
-        const list = await Risks.findAll({
-            where: { satRel: req.params.satRel }
-        });
-        res.json(list);
+        const list = await Risks.findAll({ where: { satRel: req.params.satRel } });
+        return res.status(200).json({ status: true, content: list, contentString: JSON.stringify(list) });
     } catch (error) {
         console.error("Error fetching risks by satRel:", error);
-        res.status(500).json({ error: "Failed to retrieve risks by satRel" });
+        return res.status(500).json({ status: false, content: error.message });
     }
 };
 
 const updateRisk = async (req, res) => {
     try {
-        // Update function already uses req.body directly, which is fine for updates.
-        const [updatedRows] = await Risks.update(req.body, {
-            where: { id: req.params.id }
-        });
+        const [updatedRows] = await Risks.update(req.body, { where: { id: req.params.id } });
 
         if (updatedRows > 0) {
             const updatedRisk = await Risks.findByPk(req.params.id);
-            res.json(updatedRisk);
+            return res.status(200).json({ status: true, content: updatedRisk, contentString: JSON.stringify(updatedRisk) });
         } else {
-            res.status(404).json({ updated: false, message: `Risk with ID ${req.params.id} not found or no changes made.` });
+            return res.status(404).json({ status: false, content: `Risk with ID ${req.params.id} not found or no changes made.` });
         }
     } catch (error) {
         console.error("Error updating risk:", error);
-        res.status(500).json({ error: "Failed to update risk" });
+        if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(400).json({ status: false, content: error.errors });
+        }
+        return res.status(500).json({ status: false, content: error.message });
     }
 };
 
 const deleteRisk = async (req, res) => {
     try {
-        const deletedRows = await Risks.destroy({ 
-            where: { id: req.params.id }
-        });
-        
+        const deletedRows = await Risks.destroy({ where: { id: req.params.id } });
+
         if (deletedRows > 0) {
-            res.json({ deleted: true, message: `Risk with ID ${req.params.id} deleted successfully.` });
+            return res.status(200).json({ status: true, content: { deleted: true, id: req.params.id } });
         } else {
-            res.status(404).json({ deleted: false, message: `Risk with ID ${req.params.id} not found.` });
+            return res.status(404).json({ status: false, content: `Risk with ID ${req.params.id} not found.` });
         }
     } catch (error) {
         console.error("Error deleting risk:", error);
-        res.status(500).json({ error: "Failed to delete risk" });
+        return res.status(500).json({ status: false, content: error.message });
     }
 };
 
-export { 
-    createLocation, 
-    getAllLocations, 
-    getLocationsByJudet, 
+export {
+    riskBULK,
+    createLocation,
+    getAllLocations,
+    getLocationsByJudet,
     deleteLocation,
     createRisk,
     getAllRisks,

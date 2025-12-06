@@ -1,16 +1,8 @@
-import { DataTypes, Sequelize } from "sequelize";
-import { Locations } from "./locations";
-require('dotenv').config();
-
+import { DataTypes } from "sequelize";
+import { Locations } from "./locations.js";
+import { sequelize } from "../db-instance.js";
 import { POSSIBLE_RISKS } from "../vld/risk-validation.js";
 
-const sequelize = new Sequelize({
-    dialect: 'sqlite',
-
-    storage: './db/analitics.sqlite'
-
-
-});
 
 export var Risks = sequelize.define('Risks', {
     id: {
@@ -18,7 +10,7 @@ export var Risks = sequelize.define('Risks', {
         primaryKey: true,
         autoIncrement: true
     },
-    typeofRisk: {
+    type_risk: {
         type: DataTypes.STRING,
         validate: {
             isIn: [POSSIBLE_RISKS]
@@ -41,9 +33,3 @@ export var Risks = sequelize.define('Risks', {
     tableName: 'risks',
     timestamps: true
 });
-
-Risks.belongsTo(Locations, { foreignKey: 'satRel' });
-
-sequelize.sync()
-    .then(() => { console.log("DB connection working!"); })
-    .catch(error => console.log("DB connection failed", error));
