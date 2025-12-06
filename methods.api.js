@@ -5,12 +5,16 @@ import { Risks } from "./tables/risks.js";
 
 const createLocation = async (req, res) => {
     try {
-        // req.body should contain { judeti, locatie, numLoc }
-        const loc = await Locations.create(req.body);
-        res.json(loc);
+        const loc = await Locations.create({
+            judeti: req.body.judeti,
+            locatie: req.body.locatie,
+            numLoc: req.body.numLoc
+        });
+        res.status(201).json(loc); // Use 201 Created status for POST
     } catch (error) {
         console.error("Error creating location:", error);
-        res.status(500).json({ error: "Failed to create location" });
+        // Sequelize validation errors often benefit from 400 Bad Request
+        res.status(500).json({ error: "Failed to create location", details: error.message });
     }
 };
 
@@ -53,27 +57,21 @@ const deleteLocation = async (req, res) => {
     }
 };
 
-
-export { 
-    createLocation, 
-    getAllLocations, 
-    getLocationsByJudet, 
-    deleteLocation 
-};
-
-
+// --- RISKS CRUD ---
 
 const createRisk = async (req, res) => {
     try {
-        // req.body should contain { info, satRel, arrayStringNumeFisiere }
-        const newRisk = await Risks.create(req.body);
-        res.json(newRisk);
+        const newRisk = await Risks.create({
+            info: req.body.info,
+            satRel: req.body.satRel,
+            arrayStringNumeFisiere: req.body.arrayStringNumeFisiere // Ensure frontend sends this as a JSON string or array
+        });
+        res.status(201).json(newRisk); // Use 201 Created status
     } catch (error) {
         console.error("Error creating risk:", error);
-        res.status(500).json({ error: "Failed to create risk" });
+        res.status(500).json({ error: "Failed to create risk", details: error.message });
     }
 };
-
 
 const getAllRisks = async (req, res) => {
     try {
@@ -114,12 +112,12 @@ const getRisksBySatRel = async (req, res) => {
 
 const updateRisk = async (req, res) => {
     try {
+        // Update function already uses req.body directly, which is fine for updates.
         const [updatedRows] = await Risks.update(req.body, {
             where: { id: req.params.id }
         });
 
         if (updatedRows > 0) {
-            // Fetch and return the updated record
             const updatedRisk = await Risks.findByPk(req.params.id);
             res.json(updatedRisk);
         } else {
@@ -149,6 +147,10 @@ const deleteRisk = async (req, res) => {
 };
 
 export { 
+    createLocation, 
+    getAllLocations, 
+    getLocationsByJudet, 
+    deleteLocation,
     createRisk,
     getAllRisks,
     getRiskById,
