@@ -1,12 +1,15 @@
 import { DataTypes, Sequelize } from "sequelize";
+import { Risks } from "./risks";
 
 const sequelize = new Sequelize({
     dialect: 'sqlite',
+
     storage: './db/analitics.sqlite'
+
 
 });
 
-export const Locations = sequelize.define('Locations', {
+export var Locations = sequelize.define('Locations', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -25,6 +28,8 @@ export const Locations = sequelize.define('Locations', {
     tableName: 'locations',
     timestamps: false 
 });
+
+Locations.hasMany(Risks, { foreignKey: 'satRel' });
 
 sequelize.sync()
     .then( () => {console.log("DB connection working!");})
