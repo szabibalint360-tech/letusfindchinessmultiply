@@ -75,7 +75,7 @@ const createRisk = async (req, res) => {
         const newRisk = await Risks.create({
             info: req.body.info,
             satRel: req.body.satRel,
-            type_risk: req.body.type_risk,
+            typerisk: req.body.typerisk,
             arrayStringNumeFisiere: req.body.arrayStringNumeFisiere // Ensure frontend sends this as a JSON string or array
         });
         return res.status(201).json({ status: true, content: newRisk, contentString: JSON.stringify(newRisk) });

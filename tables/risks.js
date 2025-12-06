@@ -10,11 +10,8 @@ export var Risks = sequelize.define('Risks', {
         primaryKey: true,
         autoIncrement: true
     },
-    type_risk: {
+    typerisk: {
         type: DataTypes.STRING,
-        validate: {
-            isIn: [POSSIBLE_RISKS]
-        }
     },
     info: {
         type: DataTypes.STRING(2048)
