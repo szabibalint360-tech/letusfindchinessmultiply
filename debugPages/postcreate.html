@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Post - Infrastructure Gap</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef1f5; /* Light, editorial background */
+            padding: 30px 0;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #eef1f5; /* White content base */
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 40px;
+        }
+        .header {
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h1 {
+            color: #2c3e50;
+            font-size: 1.8em;
+        }
+        .btn-back {
+            text-decoration: none;
+            color: #555;
+            padding: 8px 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .btn-back:hover {
+            background: #f0f0f0;
+        }
+
+        /* Form Styling */
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        input[type="text"], 
+        textarea, 
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+        input[type="text"]:focus, 
+        textarea:focus, 
+        select:focus {
+            outline: 2px solid #e74c3c; /* Highlight color from journalism site */
+            border-color: #e74c3c;
+        }
+        #mainText {
+            min-height: 400px; /* Large writing area */
+            resize: vertical;
+        }
+        
+        /* File Upload Area */
+        .file-upload-section {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            padding: 15px;
+            border: 1px dashed #e74c3c;
+            border-radius: 6px;
+            background: #fffafa;
+        }
+        #uploadedFilesList {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 10px;
+            min-height: 20px;
+            padding: 5px;
+            border: 1px solid #eee;
+        }
+
+        /* Buttons */
+        .btn-actions {
+            margin-top: 30px;
+            text-align: right;
+        }
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .btn-primary {
+            background: #e74c3c; /* Save/Publish button */
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #c0392b;
+        }
+        .btn-secondary {
+            background: #ccc; /* Draft/Cancel button */
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background: #bbb;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>✍️ Create New Article Post</h1>
+            <a href="index.html" class="btn-back">← Back to Articles</a>
+        </div>
+
+        <form id="postForm">
+            <div class="form-group">
+                <label for="title">Title / Headline</label>
+                <input type="text" id="title" placeholder="Enter a compelling title for the report" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="mainText">Article Body</label>
+                <textarea id="mainText" placeholder="Start writing the full report here..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="locationId">Reference Location ID (Optional)</label>
+                <select id="locationId">
+                    <option value="">-- Select Location (from Locations DB) --</option>
+                    <option value="1">Region A - District 1</option>
+                    <option value="2">Region B - District 5</option>
+                    </select>
+            </div>
+
+            <div class="form-group">
+                <label>Attach Media / Files</label>
+                <div class="file-upload-section">
+                    <input type="file" id="uploadFiles" multiple accept="image/*, .pdf, .doc, .docx">
+                    <button type="button" class="btn btn-secondary" onclick="uploadMedia()">Upload Selected</button>
+                </div>
+                <input type="hidden" id="filesArray" name="files" value="[]">
+                <div id="uploadedFilesList">No files uploaded yet.</div>
+            </div>
+
+            <div class="btn-actions">
+                <button type="submit" class="btn btn-secondary">Save as Draft</button>
+                <button type="submit" class="btn btn-primary">Publish Post</button>
+            </div>
+        </form>
+    </div>
+
+<script>
+    // Define the base URL for the backend API
+    const API_BASE = 'http://localhost:8080';
+
+    // --- 1. File Upload Function ---
+    // This function sends files to the backend and receives the stored filenames.
+    window.uploadMedia = async function() {
+        const fileInput = document.getElementById('uploadFiles');
+        const fileListDiv = document.getElementById('uploadedFilesList');
+        const filesArrayInput = document.getElementById('filesArray');
+        
+        if (fileInput.files.length === 0) {
+            alert("Please select files to upload.");
+            return;
+        }
+
+        const formData = new FormData();
+        for (let file of fileInput.files) {
+            // 'files' must match the key used in Multer: upload.array('files')
+            formData.append("files", file); 
+        }
+        
+        fileListDiv.innerHTML = 'Uploading...'; 
+
+        try {
+            const res = await fetch(`${API_BASE}/post`, { // <-- Actual API Call
+                method: 'POST',
+                body: formData // Fetch handles setting Content-Type for FormData
+            });
+
+            const result = await res.json();
+
+            if (res.ok) {
+                // 1. Store the backend's returned array of filenames in the hidden input
+                filesArrayInput.value = JSON.stringify(result.files);
+                
+                // 2. Update the user interface
+                fileListDiv.innerHTML = `✅ Uploaded: ${result.files.join(', ')}`;
+                alert(`Upload successful! ${result.files.length} file(s) are staged.`);
+            } else {
+                fileListDiv.innerHTML = `❌ Upload failed: ${result.error || 'Server error'}`;
+                alert(`Upload failed: ${result.error || 'Server error'}`);
+            }
+        } catch (error) {
+            console.error('Network Error during upload:', error);
+            fileListDiv.innerHTML = `❌ Network error during upload.`;
+            alert('Upload failed due to network error.');
+        }
+    };
+
+    // --- 2. Form Submission Function ---
+    // This function sends the final post data (including filenames) to the database.
+    document.getElementById('postForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const postData = {
+            title: document.getElementById('title').value,
+            mainText: document.getElementById('mainText').value,
+            locationId: document.getElementById('locationId').value || null, // Optional, though not used in your Posts model yet
+            // Get the array of filenames from the hidden input
+            files: JSON.parse(document.getElementById('filesArray').value || '[]') 
+        };
+
+        try {
+            const res = await fetch(`${API_BASE}/posts`, { // <-- Actual API Call
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(postData)
+            });
+
+            const result = await res.json();
+
+            if (res.ok) {
+                alert(`Post successfully created! ID: ${result.post.id}`);
+                // Clear the form after success
+                document.getElementById('postForm').reset();
+                document.getElementById('filesArray').value = '[]';
+                document.getElementById('uploadedFilesList').innerHTML = 'No files uploaded yet.';
+            } else {
+                alert(`Post creation failed: ${result.error}`);
+            }
+        } catch (error) {
+            console.error('Post creation network error:', error);
+            alert('Failed to connect to the server.');
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        /* Global Reset and Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #f8f8f8; /* Very light grey base for contrast */
+    color: #333;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Header & Navigation */
+.main-header {
+    background-color: #f8f8f8;
+    border-bottom: 2px solid #ddd;
+    padding: 15px 0;
+}
+
+.main-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 1.8em;
+    color: #2c3e50;
+}
+
+.logo strong {
+    color: #e74c3c; /* A strong color for emphasis, like red/rust */
+}
+
+.main-nav ul {
+    list-style: none;
+    display: flex;
+}
+
+.main-nav ul li a {
+    text-decoration: none;
+    color: #555;
+    padding: 10px 15px;
+    transition: color 0.3s, background-color 0.3s;
+}
+
+.main-nav ul li a:hover,
+.main-nav ul li a.active {
+    color: #e74c3c;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+}
+
+/* Hero Section (The prominent top image area) */
+.hero-section {
+    background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('placeholder-bridge-broken.jpg') no-repeat center center/cover;
+    height: 400px; /* Adjust height as needed */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+    color: white;
+    text-align: center;
+}
+
+/* Add the placeholder-bridge-broken.jpg image tag for instruction */
+/*  */
+
+.headline-box {
+    padding: 20px 40px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 3px solid #e74c3c;
+    max-width: 600px;
+}
+
+.headline-box h2 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+.headline-box p {
+    font-size: 1.2em;
+    font-style: italic;
+}
+
+/* Main Content Layout (Flexbox for Articles and Sidebar) */
+.content-wrapper {
+    display: flex;
+    gap: 30px;
+}
+
+.main-content {
+    flex: 3; /* Takes up 3/4 of the space */
+}
+
+.sidebar {
+    flex: 1; /* Takes up 1/4 of the space */
+}
+
+.section-title {
+    font-size: 2em;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    border-left: 5px solid #e74c3c;
+    padding-left: 10px;
+}
+
+/* Post Cards (New Post Containers) */
+.post-card {
+    background-color: #f8f8f8; /* White base for article containers */
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+    padding: 15px;
+    display: flex;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+}
+
+.post-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+.post-image {
+    width: 200px; /* Fixed width for the image placeholder */
+    height: 150px;
+    background-color: #ccc;
+    margin-right: 15px;
+    flex-shrink: 0;
+    background-size: cover;
+    background-position: center;
+}
+
+/* Add placeholder images for instruction */
+/*  */
+/*  */
+/*  */
+
+.post-info h3 {
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.post-info .excerpt {
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.read-more {
+    color: #e74c3c;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.read-more:hover {
+    text-decoration: underline;
+}
+
+
+/* Sidebar (Ads/Sponsored Content) */
+.ad-container {
+    background-color: #bbb;
+    border: 1px solid #e74c3c; /* Highlighted border for ads */
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.ad-title {
+    color: #e74c3c;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.ad-placeholder {
+    height: 250px;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    border: 1px dashed #ccc;
+    font-style: italic;
+}
+
+/* Footer */
+.main-footer {
+    background: #2c3e50;
+    color: #bbb;
+    padding: 20px 0;
+    text-align: center;
+    margin-top: 30px;
+}
+
+.main-footer a {
+    color: #e74c3c;
+    text-decoration: none;
+}
+
+.main-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .content-wrapper {
+        flex-direction: column;
+    }
+
+    .post-card {
+        flex-direction: column;
+    }
+
+    .post-image {
+        width: 100%;
+        height: 200px;
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+
+    .main-header .container {
+        flex-direction: column;
+    }
+
+    .main-nav ul {
+        margin-top: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .main-nav ul li a {
+        padding: 5px 10px;
+    }
+}
+    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Infrastructure Gap - Journalism for Change</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="container">
+            <h1 class="logo">The **Infrastructure Gap**</h1>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="#home" class="active">Home</a></li>
+                    <li><a href="#articles">Articles</a></li>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#donate">Donate</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero-section">
+        <div class="hero-content container">
+            <div class="headline-box">
+                <h2>Underfunded... Underserved... Untold.</h2>
+                <p>Journalism for Change</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="content-wrapper container">
+
+        <main class="main-content">
+            <h2 class="section-title">Latest Reports</h2>
+            
+            <article class="post-card">
+                <div class="post-image" style="background-image: url('placeholder-road.jpg');"></div>
+                <div class="post-info">
+                    <h3>The Crumbling Lifeline: Why Rural Roads Are Failing</h3>
+                    <p class="excerpt">A deep dive into the lack of maintenance funds devastating transportation in remote communities and the economic toll it takes on small businesses...</p>
+                    <a href="#" class="read-more">Read Full Story &rarr;</a>
+                </div>
+            </article>
+
+            <article class="post-card">
+                <div class="post-image" style="background-image: url('placeholder-water.jpg');"></div>
+                <div class="post-info">
+                    <h3>Poison in the Pipes: Decades of Neglect in Urban Water Systems</h3>
+                    <p class="excerpt">Investigating the lead and outdated piping systems threatening public health in major city centers, and the political barriers to modernization...</p>
+                    <a href="#" class="read-more">Read Full Story &rarr;</a>
+                </div>
+            </article>
+            
+            <article class="post-card">
+                <div class="post-image" style="background-image: url('placeholder-power.jpg');"></div>
+                <div class="post-info">
+                    <h3>The Dark Grid: How Outdated Power Lines Lead to Frequent Blackouts</h3>
+                    <p class="excerpt">Examining the financial decisions that prioritize short-term savings over grid reliability, leaving millions vulnerable during extreme weather events...</p>
+                    <a href="#" class="read-more">Read Full Story &rarr;</a>
+                </div>
+            </article>
+
+        </main>
+
+        <aside class="sidebar">
+            <div class="ad-container">
+                <h3 class="ad-title">Sponsored Content</h3>
+                <p>Advertise with us to reach a dedicated audience interested in public works and policy.</p>
+                <div class="ad-placeholder">
+                    [ Your Advertisement Here ]
+                </div>
+            </div>
+            
+            <div class="ad-container follow-us">
+                <h3 class="ad-title">Follow Our Work</h3>
+                <p>Stay informed on the fight for better infrastructure.</p>
+                </div>
+        </aside>
+
+    </div> <footer class="main-footer">
+        <div class="container">
+            <p>&copy; 2024 The Infrastructure Gap. All Rights Reserved. | <a href="#privacy">Privacy Policy</a></p>
+        </div>
+    </footer>
+
+</body>
+</html>

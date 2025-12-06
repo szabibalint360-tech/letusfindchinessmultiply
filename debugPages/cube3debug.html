@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Debug Dashboard</title>
+    
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        .header .btn-home {
+            color: #2ecc71;
+            text-decoration: none;
+            padding: 5px 10px;
+            border: 1px solid #2ecc71;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .header .btn-home:hover {
+            background-color: #2ecc71;
+            color: #2c3e50;
+        }
+
+        .main-content-grid {
+            /* --- VERTICAL LAYOUT CHANGE --- */
+            display: grid;
+            /* 1 column, all rows auto-sized */
+            grid-template-columns: 1fr;
+            /* Explicitly define rows for vertical stacking */
+            grid-auto-rows: minmax(min-content, max-content); 
+            flex-grow: 1; 
+            gap: 10px; /* Space between panels (vertically) */
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .panel {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            /* Panels will expand as needed, but scroll if max height is hit */
+            max-height: 90vh; 
+            overflow-y: auto; 
+        }
+
+        h2 {
+            color: #4a69bd;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        
+        /* --- General Form & Separator Styles --- */
+        #risk-selector {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            font-size: 1em;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #e0e0e0;
+            margin: 15px 0;
+        }
+
+        /* --- Panel 1: PDF List Styling --- */
+        #pdf-list-container a {
+            display: block;
+            padding: 5px 0;
+            color: #2c3e50;
+            text-decoration: none;
+            border-bottom: 1px dotted #ecf0f1;
+        }
+
+        #pdf-list-container a:hover {
+            color: #4a69bd;
+            background-color: #ecf0f1;
+        }
+
+        .placeholder-text {
+            color: #95a5a6;
+            font-style: italic;
+        }
+
+        /* --- Panel 2: Response Panel Styling (Dark) --- */
+        .response-panel {
+            background-color: #2c3e50; /* Dark background for code/JSON */
+            color: #ecf0f1;
+        }
+
+        .response-header {
+            margin-bottom: 10px;
+            padding: 5px;
+            border-bottom: 1px solid #7f8c8d;
+            font-weight: bold;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+        
+        #response-status {
+            color: #2ecc71; /* Green for success */
+            margin-right: 15px;
+            font-size: 1.1em;
+        }
+
+        #http-status-code {
+            background-color: #2ecc71;
+            color: #2c3e50;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        #response-json {
+            white-space: pre-wrap; /* Preserve formatting and wrap long lines */
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9em;
+            padding: 10px;
+            background-color: #34495e;
+            border-radius: 4px;
+        }
+
+        /* --- Panel 3: Template Panel Styling --- */
+        .template-panel ul {
+            list-style: square;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="header">
+        <h1>🐞 Debug Console: Risk Data</h1>
+        <a href="/" class="btn-home">← Back to Dashboard</a>
+    </div>
+
+    <div class="main-content-grid">
+        <div class="panel pdf-panel">
+            <h2>🔎 Filter by Risk Type</h2>
+            
+            <label for="risk-selector">Select Type:</label>
+            <select id="risk-selector">
+                </select>
+            
+            <hr>
+            
+            <h3>📄 Associated PDF Files</h3>
+            <div id="pdf-list-container">
+                <p class="placeholder-text">Select a risk type to view associated files...</p>
+            </div>
+        </div>
+
+        <div class="panel response-panel">
+            <h2>📊 API Response Debug</h2>
+            <div class="response-header">
+                <span id="response-status"></span>
+                <span id="http-status-code"></span>
+            </div>
+            <pre id="response-json"></pre>
+        </div>
+
+        <div class="panel template-panel">
+            <h2>📌 General Template Panel</h2>
+            <p>Anything can go in this section.</p>
+            <ul>
+                <li>Place charts here.</li>
+                <li>Add quick action buttons.</li>
+                <li>Display related data summaries.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Configuration: YOUR API ENDPOINT ---
+            const API_BASE_URL = 'http://localhost:8080';
+            const ALL_RISKS_ENDPOINT = `${API_BASE_URL}/risks`;
+
+            // --- DOM Elements ---
+            const riskSelector = document.getElementById('risk-selector');
+            const pdfListContainer = document.getElementById('pdf-list-container');
+            const responseJsonElement = document.getElementById('response-json');
+            const responseStatusElement = document.getElementById('response-status');
+            const httpStatusCodeElement = document.getElementById('http-status-code');
+
+            let allRiskData = []; // Store the full response content here
+
+            // ----------------------------------------------------
+            // FUNCTION: Renders the filtered PDF list
+            // ----------------------------------------------------
+            const renderPdfList = (selectedType, data) => {
+                pdfListContainer.innerHTML = ''; // Clear previous list
+                
+                // Filter the risk data based on the selection
+                const filteredRisks = selectedType
+                    ? data.filter(risk => risk.type_risk === selectedType)
+                    : data; // Show all if no type is selected
+
+                const allPdfs = [];
+
+                // Collect all PDF file names from the filtered risk objects
+                filteredRisks.forEach(risk => {
+                    let files = risk.arrayStringNumeFisiere;
+                    if (typeof files === 'string') {
+                        try {
+                            files = JSON.parse(files);
+                        } catch (e) {
+                            console.error("Could not parse file names string:", files);
+                            files = [];
+                        }
+                    }
+
+                    if (files && Array.isArray(files)) {
+                        files.forEach(fileName => {
+                            allPdfs.push({
+                                name: fileName,
+                                riskId: risk.id,
+                                type: risk.type_risk || 'N/A'
+                            });
+                        });
+                    }
+                });
+
+                if (allPdfs.length > 0) {
+                    allPdfs.forEach(pdf => {
+                        const item = document.createElement('div');
+                        item.className = 'pdf-item';
+                        
+                        // Link PDF file to the uploads endpoint to enable download/view
+                        item.innerHTML = `
+                            <a href="${API_BASE_URL}/uploads/${pdf.name}" target="_blank" title="Download ${pdf.name}">
+                                <strong>[ID: ${pdf.riskId} | Type: ${pdf.type}]</strong> ${pdf.name}
+                            </a>`;
+                        pdfListContainer.appendChild(item);
+                    });
+                } else {
+                    pdfListContainer.innerHTML = '<p class="placeholder-text">No PDF files found for the selected risk type or no risks retrieved.</p>';
+                }
+            };
+
+            const populateRiskSelector = (data) => {
+                const uniqueRiskTypes = new Set();
+                data.forEach(risk => {
+                    if (risk.type_risk) {
+                        uniqueRiskTypes.add(risk.type_risk);
+                    }
+                });
+
+                riskSelector.innerHTML = '';
+                const allOption = document.createElement('option');
+                allOption.value = '';
+                allOption.textContent = 'All Risks';
+                riskSelector.appendChild(allOption);
+
+                Array.from(uniqueRiskTypes).sort().forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type;
+                    option.textContent = type;
+                    riskSelector.appendChild(option);
+                });
+
+                riskSelector.addEventListener('change', (event) => {
+                    const selectedType = event.target.value;
+                    renderPdfList(selectedType, allRiskData);
+                });
+            };
+
+            // ----------------------------------------------------
+            // MAIN FUNCTION: Fetch data from the real API
+            // ----------------------------------------------------
+            const fetchAllRisks = async () => {
+                responseStatusElement.textContent = `📊 Fetching...`;
+                httpStatusCodeElement.textContent = `[Loading]`;
+                httpStatusCodeElement.style.backgroundColor = '#4a69bd'; // Loading color
+
+                try {
+                    const response = await fetch(ALL_RISKS_ENDPOINT);
+                    const httpStatusCode = response.status;
+                    const jsonResponse = await response.json();
+                    
+                    // --- Update Response Panel (Panel 2) ---
+                    responseStatusElement.textContent = `📊 Response`;
+                    httpStatusCodeElement.textContent = `[${httpStatusCode} ${httpStatusCode === 200 ? 'OK' : 'Error'}]`;
+
+                    if (httpStatusCode >= 400 || jsonResponse.status === false) {
+                        responseStatusElement.style.color = '#e74c3c'; // Red
+                        httpStatusCodeElement.style.backgroundColor = '#e74c3c';
+                    } else {
+                        responseStatusElement.style.color = '#2ecc71'; // Green
+                        httpStatusCodeElement.style.backgroundColor = '#2ecc71';
+                    }
+
+                    const formattedJson = JSON.stringify(jsonResponse, null, 2);
+                    responseJsonElement.textContent = formattedJson;
+
+                    // --- Update PDF/Filter Panel (Panel 1) ---
+                    if (httpStatusCode === 200 && jsonResponse.status === true && Array.isArray(jsonResponse.content)) {
+                        allRiskData = jsonResponse.content; 
+                        populateRiskSelector(allRiskData);
+                        renderPdfList('', allRiskData); 
+                    } else {
+                        pdfListContainer.innerHTML = `<p class="placeholder-text" style="color: #e74c3c;">Error fetching data: ${jsonResponse.content || 'Check server status.'}</p>`;
+                    }
+
+                } catch (error) {
+                    // Network or parsing error
+                    console.error("Fetch error:", error);
+                    responseStatusElement.textContent = `❌ Network Error`;
+                    httpStatusCodeElement.textContent = `[N/A]`;
+                    responseStatusElement.style.color = '#e74c3c';
+                    httpStatusCodeElement.style.backgroundColor = '#e74c3c';
+                    pdfListContainer.innerHTML = `<p class="placeholder-text" style="color: #e74c3c;">Could not connect to the API at ${ALL_RISKS_ENDPOINT}. Check your server and URL.</p>`;
+                    responseJsonElement.textContent = JSON.stringify({ error: error.message || 'Check browser console.' }, null, 2);
+                }
+            };
+
+            // Execute the fetch on load
+            fetchAllRisks();
+        });
+    </script>
+</body>
+</html>
