@@ -41,7 +41,7 @@ app.get("/risks/:id", getRiskById);
 app.get("/risks/satrel/:satRel", getRisksBySatRel);
 app.put("/risks/:id", updateRisk);
 app.delete("/risks/:id", deleteRisk);
-app.get('/risks/bulkcreate', riskBULK);
+app.post('/risks/bulkcreate', riskBULK);
 
 app.get('/risks-val', riskValidationTest);
 app.get('/judet-list', judetGetList);

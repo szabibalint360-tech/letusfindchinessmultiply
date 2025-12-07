@@ -97,7 +97,7 @@ export const riskValidationTest = async (req, res) => {
 // DEBUG METHOD FOR BULK INSERT
 const riskBULK = async (req, res) => {
     try {
-        await Risks.bulkCreate(req.params.jsonArray);
+        await Risks.bulkCreate(req.body.jsonArray);
         return res.status(200).json({ status: true, content: 'Table populated successfully.' });
     } catch (error) {
         console.error("Error during Risks bulkCreate:", error);
